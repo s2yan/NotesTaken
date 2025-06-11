@@ -9,7 +9,7 @@ const userSchema = new Schema(
             required: true,
             unique: true,
         },
-        firstName:{
+        fullname:{
             type: String,
             required: true
         },
@@ -30,6 +30,7 @@ const userSchema = new Schema(
                 ref: 'Note'
             }
         ],
+        
         avatar:{
             type: String, //Cloudinary URL
             required: true,
@@ -56,15 +57,25 @@ userSchema.methods.isPasswordMatched = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 }
 
-userSchema.mothods.generateRefreshToken = function(){
-    jwt.sign(
+userSchema.methods.generateRefreshToken = function(){
+    return jwt.sign(
         {
             _id: this._id,
             username: this.username,
             password: this.password   
         },
-        process.env.JWT_SECRET,
-        {expiresIn: process.env.JWT_EXPIRY}
+        process.env.JWT_ACCESS_TOKEN_SECRET,
+        {expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRY}
+    )
+}
+
+userSchema.methods.generateAccessToken = function(){
+    return jwt.sign(
+        {
+            _id: this._id
+        },
+        process.env.JWT_REFRESH_TOKEN_SECRET,
+        {expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRY}
     )
 }
 
